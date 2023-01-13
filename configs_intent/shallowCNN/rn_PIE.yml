@@ -1,0 +1,71 @@
+# use_wandb: True
+project: 'rn-pie'
+ckpt_dir: 'checkpoints/PIE/rn/'  ## 
+out_dir:
+device: 'cuda'
+method: 'rn'
+# visualize: True
+model:
+  # global configs
+  img_size: (384, 216) # (192, 108) #  # the resolution of resized full frames
+  input_len: 16 # observation length
+  pred_len: 0 #45 # input and pred_len is defined in 30fps
+  time_to_event: [30, 60]
+  use_traffic: False
+  pred_intent: True
+  num_pedintent_class: 2
+  # motion configs
+  motion:
+    global_input_dim: 4  # raw trajectory  
+    enc_input_size: 256 # trajectory embedding
+    enc_hidden_size: 256
+    dec_input_size: 256
+    dec_hidden_size: 256
+    dec_output_dim: 4
+    enc_concat_type: ''
+  # visual configs
+  visual:
+    use_frame: True
+    crop_type: 'context'  ## or 'bbox'
+    backbone: 'shallowCNN'
+    backbone_dim: 24
+    backbone_pretrained: False #True
+    head_feat_dim: 256 #512
+    use_agent_roi: False
+    use_traffic_mask: False
+  # graph configs
+  graph:
+    adj_type: 'spatialOnly'
+    collect_adj: True
+    n_lyrs: 2
+    diff_lyr_weight: True
+    conv_dim: 256
+dataset:
+  name: 'PIE'
+  root: '/dataset/PIE/'
+  track_overlap: 0.6
+  excl_ocln: True
+  bbox_type: 'cxcywh' # bbox is in cxcywh format
+  normalize: 'zero-one' 
+  min_bbox: [0,0,0,0] # the min of cxcywh or x1x2y1y2
+  max_bbox: [1920, 1080, 1920, 1080] # the max of cxcywh or x1x2y1y2
+  cacher:
+    path: '/dataset/PIE/cache'
+dataloader:
+  num_workers: 4
+solver:
+  max_epoch: 100 #50
+  batch_size: 64 #32 #16
+  optimizer: 'Adam' #'SGD'
+  lr: 0.001 #0.0005 #0.0012 
+  scheduler: 'plateau' #'mslr'
+  lr_steps: [60,80]
+  lr_decay_rate: 0.8 
+test:
+  batch_size: 64 #32 #16
+  # inference: True
+  # epoch: 89 
+  metrics: ['ADE(0.5s)', 'ADE(1.0s)', 'ADE(1.5s)', 'FDE', 'C-ADE(0.5s)', 'C-ADE(1.0s)', 'C-ADE(1.5s)', 'C-FDE']
+stats_anl:
+  subsets: ['test',] # ['train', 'val', 'test']
+  # metrics: ['',]   
